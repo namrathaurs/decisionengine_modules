@@ -3,8 +3,15 @@
 
 import pandas as pd
 
+from packaging import version
+
 from decisionengine.framework.modules import Transform
 from decisionengine.framework.modules.Transform import Parameter
+
+if version.parse(pd.__version__) >= version.parse("1.5.0"):
+    from pandas.errors import UndefinedVariableError
+else:
+    from pandas.core.computation.ops import UndefinedVariableError
 
 # TODO
 # - what debugging logs are needed?
@@ -62,7 +69,7 @@ class JobClustering(Transform.Transform):
         except ValueError:
             self.logger.exception("Unable to retrieve job manifests data block")
             return {"job_clusters": self.EMPTY_JOB_CLUSTER}
-        except pd.core.computation.ops.UndefinedVariableError:
+        except UndefinedVariableError:
             self.logger.exception("Unable to retrieve job manifests data block")
             return {"job_clusters": self.EMPTY_JOB_CLUSTER}
 
@@ -112,7 +119,7 @@ class JobClustering(Transform.Transform):
                 "Unable to calculate totals from job manifests, may have missing classads or incorrect classad names"
             )
             return {"job_clusters": self.EMPTY_JOB_CLUSTER}
-        except pd.core.computation.ops.UndefinedVariableError:
+        except UndefinedVariableError:
             self.logger.exception(
                 "Unable to calculate totals from job manifests, may have missing classads or incorrect classad names"
             )

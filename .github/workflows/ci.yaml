@@ -55,7 +55,7 @@ jobs:
         with:
           path: glideinwms
           repository: glideinWMS/glideinwms
-          ref: branch_v3_9
+          ref: master
 
       - name: Cache pip
         uses: actions/cache@v3

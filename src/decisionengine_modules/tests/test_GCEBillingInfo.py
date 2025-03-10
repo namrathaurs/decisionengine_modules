@@ -11,7 +11,7 @@ from decisionengine_modules.GCE.sources import GCEBillingInfo
 # TODO
 # The GCEBillingInfo module needs to be refactored so that tests
 # can be written.  Then tests can be written to test smaller bits
-# of code.  There is also an issue that the env has to have
+# of code. There is also an issue that the env has to have
 # BOTO_CONFIG set, this has to be done outside of the code and
 # can't be set in the test. Depending on how this testing is done
 # you may be able to mock around this.

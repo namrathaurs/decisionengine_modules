@@ -10,7 +10,7 @@ import pandas
 import pytest
 import structlog
 
-from google.auth.exceptions import RefreshError
+from google.auth.exceptions import DefaultCredentialsError, RefreshError
 from pandas.testing import assert_frame_equal
 
 from decisionengine_modules.GCE.sources import GCEBillingInfo
@@ -18,10 +18,7 @@ from decisionengine_modules.GCE.sources import GCEBillingInfo
 # TODO
 # The GCEBillingInfo module needs to be refactored so that tests
 # can be written.  Then tests can be written to test smaller bits
-# of code.  There is also an issue that the env has to have
-# BOTO_CONFIG set, this has to be done outside of the code and
-# can't be set in the test. Depending on how this testing is done
-# you may be able to mock around this.
+# of code.
 
 config_billing_info = {
     "channel_name": "GCETest",
@@ -38,7 +35,7 @@ def test_produces():
 
 
 @pytest.fixture
-def example_service_account_credential():
+def example_expired_service_account_credential():
     return json.dumps(
         {
             "type": "service_account",
@@ -51,6 +48,25 @@ def example_service_account_credential():
             "token_uri": "https://oauth2.googleapis.com/token",
             "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
             "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/gcloudbillerathepcloud-fnal.iam.gserviceaccount.com",
+            "universe_domain": "googleapis.com",
+        }
+    )
+
+
+@pytest.fixture
+def example_invalid_pk_service_account_credential():
+    return json.dumps(
+        {
+            "type": "service_account",
+            "project_id": "hc-de-test",
+            "private_key_id": "a0b1c2d3e4f5g6h7i8j9k0l1m2n3o4p5q6r7s8t9",
+            "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDY3E8o1NEFcjMM\nHW/5ZfFJw29/8NEqpViNjQIx95Xx5KDtJ+nWn9+OW0uqsSqKlKGhAdAo+Q6bjx2c\nuXVsXTu7XrZUY5Kltvj94DvUa1wjNXs606r/RxWTJ58bfdC+gLLxBfGnB6CwK0YQ\nxnfpjNbkUfVVzO0MQD7UP0Hl5ZcY0Puvxd/yHuONQn/rIAieTHH1pqgW+zrH/y3c\n59IGThC9PPtugI9ea8RSnVj3PWz1bX2UkCDpy9IRh9LzJLaYYX9RUd7++dULUlat\nAaXBh1U6emUDzhrIsgApjDVtimOPbmQWmX1S60mqQikRpVYZ8u+NDD+LNw+/Eovn\nxCj2Y3z1AgMBAAECggEAWDBzoqO1IvVXjBA2lqId10T6hXmN3j1ifyH+aAqK+FVl\nGjyWjDj0xWQcJ9ync7bQ6fSeTeNGzP0M6kzDU1+w6FgyZqwdmXWI2VmEizRjwk+/\n/uLQUcL7I55Dxn7KUoZs/rZPmQDxmGLoue60Gg6z3yLzVcKiDc7cnhzhdBgDc8vd\nQorNAlqGPRnm3EqKQ6VQp6fyQmCAxrr45kspRXNLddat3AMsuqImDkqGKBmF3Q1y\nxWGe81LphUiRqvqbyUlh6cdSZ8pLBpc9m0c3qWPKs9paqBIvgUPlvOZMqec6x4S6\nChbdkkTRLnbsRr0Yg/nDeEPlkhRBhasXpxpMUBgPywKBgQDs2axNkFjbU94uXvd5\nznUhDVxPFBuxyUHtsJNqW4p/ujLNimGet5E/YthCnQeC2P3Ym7c3fiz68amM6hiA\nOnW7HYPZ+jKFnefpAtjyOOs46AkftEg07T9XjwWNPt8+8l0DYawPoJgbM5iE0L2O\nx8TU1Vs4mXc+ql9F90GzI0x3VwKBgQDqZOOqWw3hTnNT07Ixqnmd3dugV9S7eW6o\nU9OoUgJB4rYTpG+yFqNqbRT8bkx37iKBMEReppqonOqGm4wtuRR6LSLlgcIU9Iwx\nyfH12UWqVmFSHsgZFqM/cK3wGev38h1WBIOx3/djKn7BdlKVh8kWyx6uC8bmV+E6\nOoK0vJD6kwKBgHAySOnROBZlqzkiKW8c+uU2VATtzJSydrWm0J4wUPJifNBa/hVW\ndcqmAzXC9xznt5AVa3wxHBOfyKaE+ig8CSsjNyNZ3vbmr0X04FoV1m91k2TeXNod\njMTobkPThaNm4eLJMN2SQJuaHGTGERWC0l3T18t+/zrDMDCPiSLX1NAvAoGBAN1T\nVLJYdjvIMxf1bm59VYcepbK7HLHFkRq6xMJMZbtG0ryraZjUzYvB4q4VjHk2UDiC\nlhx13tXWDZH7MJtABzjyg+AI7XWSEQs2cBXACos0M4Myc6lU+eL+iA+OuoUOhmrh\nqmT8YYGu76/IBWUSqWuvcpHPpwl7871i4Ga/I3qnAoGBANNkKAcMoeAbJQK7a/Rn\nwPEJB+dPgNDIaboAsh1nZhVhN5cvdvCWuEYgOGCPQLYQF0zmTLcM+sVxOYgfy8mV\nfbNgPgsP5xmu6dw2COBKdtozw0HrWSRjACd1N4yGu75+wPCcX/gQarcjRcXXZeEa\nNtBLSfcqPULqD+h7br9lEJnv\n-----END PRIVATE KEY-----\n",
+            "client_email": "gbiller@hc-de-test.iam.gserviceaccount.com",
+            "client_id": "123456789012345678901",
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+            "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/gbillerathc-de-test.iam.gserviceaccount.com",
             "universe_domain": "googleapis.com",
         }
     )
@@ -131,18 +147,40 @@ def test_gcebilling_dep_version(example_constants, example_global_config):
 
 
 # the following unit tests specifically cater to the parts of GCEBilling that actually rely on BigQuery
-# in the same test, have two fake credentials
-# set different environment using monkeypatch and test for DefaultCredentialsError
 def test_unable_to_auth_to_bqclient(
-    tmp_path, example_service_account_credential, example_constants, example_global_config, monkeypatch
+    tmp_path,
+    example_expired_service_account_credential,
+    example_invalid_pk_service_account_credential,
+    example_constants,
+    example_global_config,
+    monkeypatch,
 ):
-    print(tmp_path)
     d = tmp_path
-    fake_creds = d / "fake_gce_cred.json"
-    fake_creds.write_text(example_service_account_credential, encoding="utf-8")
+    # test 1: testing bigquery client object instantiation
+    fake_cred = d / "fake_gce_cred1.json"
+    fake_cred.write_text(example_invalid_pk_service_account_credential, encoding="utf-8")
 
     with monkeypatch.context() as m:
-        m.setenv("GOOGLE_APPLICATION_CREDENTIALS", str(fake_creds))
+        m.setenv("GOOGLE_APPLICATION_CREDENTIALS", str(fake_cred))
+
+        calculator = bill_calculator_hep.GCEBillAnalysis.GCEBillCalculator(
+            None, example_global_config, example_constants, structlog.getLogger()
+        )
+
+        with pytest.raises(DefaultCredentialsError) as e_msg:
+            _ = calculator.calculateBill()
+        # since DefaultCredentialsError leads to ValueError (as part of exception chaining); `__cause__` attribute holds the chained exception
+        err = e_msg.value
+        assert err.__cause__ is not None
+        assert isinstance(err.__cause__, ValueError)
+        assert err.__cause__.args[0] == "Invalid private key"
+
+    # test 2: testing valid credential file
+    fake_cred = d / "fake_gce_cred2.json"
+    fake_cred.write_text(example_expired_service_account_credential, encoding="utf-8")
+
+    with monkeypatch.context() as m:
+        m.setenv("GOOGLE_APPLICATION_CREDENTIALS", str(fake_cred))
 
         calculator = bill_calculator_hep.GCEBillAnalysis.GCEBillCalculator(
             None, example_global_config, example_constants, structlog.getLogger()
@@ -150,6 +188,7 @@ def test_unable_to_auth_to_bqclient(
 
         with pytest.raises(RefreshError) as e_msg:
             _ = calculator.calculateBill()
+        assert e_msg.value.args[1]["error"] == "invalid grant"
         assert e_msg.value.args[1]["error_description"] == "Invalid grant: account not found"
 
 

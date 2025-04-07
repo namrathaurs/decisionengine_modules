@@ -13,7 +13,8 @@ authors = [
 ]
 dependencies = [
     "authlib",
-    "bill-calculator-hep >= 0.2.1",
+    #"bill-calculator-hep >= 0.2.1",
+    "bill-calculator-hep @ git+https://github.com/hepcloud/bill-calculator-hep.git@revert-sumtodate-gcebilling",
     "boto3 >= 1.17.10",
     "cryptography",
     #"decisionengine >= 2.0",

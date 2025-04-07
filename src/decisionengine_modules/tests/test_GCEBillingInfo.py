@@ -126,7 +126,7 @@ def test_gcebilling_dep_version(example_constants, example_global_config):
     )
 
     with pytest.raises(AttributeError) as e_msg:
-        file_list = calculator._downloadBillFiles()
+        _ = calculator._downloadBillFiles()
     assert str(e_msg.value) == "'GCEBillCalculator' object has no attribute '_downloadBillFiles'"
 
 
@@ -149,7 +149,7 @@ def test_unable_to_auth_to_bqclient(
         )
 
         with pytest.raises(RefreshError) as e_msg:
-            tst_billsummary = calculator.calculateBill()
+            _ = calculator.calculateBill()
         assert e_msg.value.args[1]["error_description"] == "Invalid grant: account not found"
 
 
@@ -230,6 +230,6 @@ def test_bill_calculation(
         bill_calculator_hep.GCEBillAnalysis.GCEBillCalculator,
         "calculateSubTotals",
         side_effect=[expected_cost_subtotals, expected_adjustments_subtotals],
-    ) as mock_method:
+    ) as _:
         tst_bill_summary = tst_calculator.calculateBill()
         assert_frame_equal(tst_bill_summary, expected_bill_summary)

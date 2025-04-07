@@ -17,7 +17,7 @@ from decisionengine_modules.GCE.sources import GCEBillingInfo
 
 # TODO
 # The GCEBillingInfo module needs to be refactored so that tests
-# can be written.  Then tests can be written to test smaller bits
+# can be written. Then tests can be written to test smaller bits
 # of code.
 
 config_billing_info = {

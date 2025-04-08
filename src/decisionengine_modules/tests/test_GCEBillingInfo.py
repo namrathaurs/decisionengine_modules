@@ -188,7 +188,7 @@ def test_unable_to_auth_to_bqclient(
 
         with pytest.raises(RefreshError) as e_msg:
             _ = calculator.calculateBill()
-        assert e_msg.value.args[1]["error"] == "invalid grant"
+        assert e_msg.value.args[1]["error"] == "invalid_grant"
         assert e_msg.value.args[1]["error_description"] == "Invalid grant: account not found"
 
 
